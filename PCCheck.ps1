@@ -273,7 +273,7 @@ $importings = @('AmCacheImp', 'AmCacheUSBImp', 'BrowserhistoryImp', 'DownloadsIm
 foreach ($impnames in $importings) {
     $lineCount = (Get-Variable -Name $impnames -ValueOnly).Count
     if ($lineCount -eq 0) {
-        Write-Output "`t`t$impnames not imported"
+        Write-Output "`t$impnames not imported"
     }
 }
 
