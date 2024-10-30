@@ -681,6 +681,7 @@ if ($Cheats1 -or $Cheats2 -or $Cheats3 -or $Cheats4 -or $Cheats5 -or $Cheats6 -o
 
 Remove-Item -Path "C:\Temp\Dump\config", "C:\Temp\Dump\logs", "C:\Temp\Dump\rules", "C:\Temp\Dump\RECmd", "C:\Temp\Dump\Events\Haya", "C:\Temp\Dump\Events\Raw" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Temp\Dump\*.exe", "C:\Temp\Dump\*.zip", "C:\Temp\Dump\Detections.txt" -Force -ErrorAction SilentlyContinue
+Move-Item -Path C:\Temp\Scripts\Viewer.html -Destination C:\Temp\Dump\Viewer.html
 Remove-MpPreference -ExclusionPath 'C:\Temp'
 
 Start-Sleep 2
