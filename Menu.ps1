@@ -145,7 +145,7 @@ do {
                         Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Testing/master/Recording-Check.ps1" -OutFile "C:\Temp\Scripts\Recording-Check.ps1"
                         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
                         Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force
-                        Add-MpPreference -ExclusionPath 'C:\Temp\Dump' | Out-Null
+                        Add-MpPreference -ExclusionPath 'C:\Temp' | Out-Null
                         & C:\temp\scripts\Record-VPN-Check.ps1
                         Start-Sleep 3
                         & C:\temp\scripts\Menu.ps1
