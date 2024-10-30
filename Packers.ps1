@@ -108,7 +108,7 @@ $filesizeFound = Get-Content $filesizePaths | Where-Object { $_ -like "*.exe" }
 foreach ($file in $filesizeFound) {
     $output = & "C:\Temp\Dump\DIE\diec.exe" -u "`"$file`""
 
-    if ($output -like "*vvvvvvvvv*") {
+    if ($output -like "*Windows Authenticode*") {
         continue
     }
 
