@@ -222,15 +222,25 @@ $EventsImp = Import-Csv C:\Temp\Dump\Events\Events.csv
 $JournalImp = Import-Csv C:\Temp\Dump\Journal\Raw\Journal.csv
 $MFTImp = Import-Csv C:\Temp\Dump\MFT\MFT.csv
 $BamImp = Import-Csv C:\Temp\Dump\Registry\BamDam.csv
+$PrefetchImp = Import-Csv C:\Temp\Dump\Prefetch\Prefetch.csv
 $ShimcacheImp = Import-Csv C:\Temp\Dump\Shimcache\Shimcache.csv
 $SRUMImp = Import-Csv C:\Temp\Dump\SRUM\SRUM.csv
 $Threats = Get-Content C:\Temp\Dump\Detections.txt
+
 $eventResults = $EventsImp | Where-Object { $_.RuleTitle -like "*Defender*" -or $_.Level -eq "crit" -or $_.Level -eq "high" } | 
 Select-Object @{Name = 'Timestamp'; Expression = { ($_.Timestamp -as [datetime]).ToString("dd/MM/yyyy HH:mm:ss") } }, RuleTitle |
 ForEach-Object { "$($_.Timestamp) $($_.RuleTitle)" }
 $eventResults2 = $EventsImp | Where-Object { $_.RuleTitle -eq "Credential Manager" -and $_.Details -match "Skript|Astra|Hydro|Leet-Cheats" } | 
 Select-Object @{Name = 'Timestamp'; Expression = { ($_.Timestamp -as [datetime]).ToString("dd/MM/yyyy HH:mm:ss") } }, RuleTitle |
 ForEach-Object { "$($_.Timestamp) $($_.RuleTitle)" }
+
+$PrefetchImp | 
+Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
+Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
+$AmCacheImp | 
+Select-Object LastWriteTime, FullPath, Size, FileExtension | 
+Export-Csv "C:\temp\dump\AmCache\AmCache_Overview.csv" -NoTypeInformation
+
 
 $hashFilePaths = @()
 foreach ($hash in $shaHashs) {
@@ -557,7 +567,7 @@ if ($MFTdllMatchOutput.Count -gt 0) {
 $MFTdllMatchOutput | Out-File -FilePath "C:\temp\dump\mft\MFT_DLL_Matches.txt" -Encoding UTF8
 
 Write-Host "   Invoking Direct Detection - Finishing"-ForegroundColor yellow
-$dps = (Get-Content C:\temp\dump\processes\raw\dps.txt | Where-Object { $_ -match '!!' -and $_ -match 'exe' } | Sort-Object -Unique) -join "`n"
+$dps = (Get-Content C:\temp\dump\processes\raw\dps.txt | Where-Object { $_ -match '!!' -and $_ -match 'exe' -and $_ -match '2024' } | Sort-Object -Unique) -join "`n"
 $Cheats1 = ""
 
 $instancePattern = "($Skript|$Hydro|$Astra|$Leet)"
@@ -691,6 +701,7 @@ if ($response -eq 'Y') {
     Start-Process powershell -ArgumentList '-File "C:\Temp\Scripts\Localhost.ps1"' -WindowStyle Hidden
     Start-Sleep 1
     Start-Process "http://localhost:8080/viewer.html"
+    Start-Process -FilePath "notepad.exe" -ArgumentList "C:\temp\dump\results.txt"
     Write-Host "`n`n`n`tResults will open" -Foregroundcolor Green
     Write-Host "`tReturning to Menu in " -NoNewline 
     Write-Host "3 " -NoNewLine -ForegroundColor Magenta
