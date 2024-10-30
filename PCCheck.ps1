@@ -688,19 +688,21 @@ Write-Host " - Do you want to open the Results in the Browser? (Y / N): " -NoNew
 $response = Read-Host
 
 if ($response -eq 'Y') {
+    Start-Process powershell -ArgumentList '-File "C:\Temp\Scripts\Localhost.ps1"' -WindowStyle Hidden
+    Start-Sleep 1
     Start-Process "http://localhost:8080/viewer.html"
     Write-Host "`n`n`n`tResults will open" -Foregroundcolor Green
     Write-Host "`tReturning to Menu in " -NoNewline 
-    Write-Host "5 " -NoNewLine -ForegroundColor Magenta
+    Write-Host "3 " -NoNewLine -ForegroundColor Magenta
     Write-Host "Seconds`n`n`n" -NoNewline
-    Start-Sleep 5
+    Start-Sleep 3
 }
 elseif ($response -eq 'N') {
     Write-Host "`n`n`n`tUser chose No" -Foregroundcolor Red
     Write-Host "`tReturning to Menu in " -NoNewline 
-    Write-Host "5 " -NoNewLine -ForegroundColor Magenta
+    Write-Host "3 " -NoNewLine -ForegroundColor Magenta
     Write-Host "Seconds`n`n`n" -NoNewline
-    Start-Sleep 5
+    Start-Sleep 3
 }
 Clear-Host
 
