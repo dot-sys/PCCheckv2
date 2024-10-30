@@ -142,11 +142,11 @@ do {
                         New-Item -Path "C:\Temp\Scripts" -ItemType Directory -Force | Out-Null
                         New-Item -Path "C:\Temp\Dump" -ItemType Directory -Force | Out-Null
                         Set-Location "C:\temp"
-                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Testing/master/Recording-Check.ps1" -OutFile "C:\Temp\Scripts\Recording-Check.ps1"
+                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Recording-Check/master/Recording-Check.ps1" -OutFile "C:\Temp\Scripts\Recording-Check.ps1"
                         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
                         Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force
                         Add-MpPreference -ExclusionPath 'C:\Temp' | Out-Null
-                        & C:\temp\scripts\Record-VPN-Check.ps1
+                        & C:\temp\scripts\Recording-Check.ps1
                         Start-Sleep 3
                         & C:\temp\scripts\Menu.ps1
                         return
@@ -155,7 +155,7 @@ do {
                         Write-Host "`n`nPerforming Advanced Filechecking (BETA)..." -ForegroundColor yellow
                         New-Item -Path "C:\Temp\Scripts" -ItemType Directory -Force | Out-Null
                         Set-Location "C:\temp"
-                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/PCCheckv2/master/Packers.ps1" -OutFile "C:\Temp\Scripts\Packers.ps1"
+                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Testing/master/Packers.ps1" -OutFile "C:\Temp\Scripts\Packers.ps1"
                         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
                         & C:\Temp\Scripts\Packers.ps1
                         return
