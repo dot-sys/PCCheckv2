@@ -10,7 +10,7 @@
 # Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
 # It is advised not to use this on your own.
 #
-# Version 2.0BETA
+# Version 2.0
 # 30 - October - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
