@@ -10,7 +10,7 @@
 # Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
 # It is advised not to use this on your own.
 #
-# Version 2.0
+# Version 2.0BETA
 # 30 - October - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
@@ -138,16 +138,15 @@ do {
                         return
                     }
                     3 {
-                        Write-Host "`n`nRecording Check will be reworked..." -ForegroundColor yellow
-                        Write-Host "`n`nCurrently not supported..." -ForegroundColor yellow
-                        #New-Item -Path "C:\Temp\Scripts" -ItemType Directory -Force | Out-Null
-                        #New-Item -Path "C:\Temp\Dump" -ItemType Directory -Force | Out-Null
-                        #Set-Location "C:\temp"
-                        #Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Testing/master/Recording-Check.ps1" -OutFile "C:\Temp\Scripts\Recording-Check.ps1"
-                        #Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-                        #Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force
-                        #Add-MpPreference -ExclusionPath 'C:\Temp\Dump' | Out-Null
-                        #& C:\temp\scripts\Record-VPN-Check.ps1
+                        Write-Host "`n`nPerforming Recording Check..." -ForegroundColor yellow
+                        New-Item -Path "C:\Temp\Scripts" -ItemType Directory -Force | Out-Null
+                        New-Item -Path "C:\Temp\Dump" -ItemType Directory -Force | Out-Null
+                        Set-Location "C:\temp"
+                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dot-sys/Testing/master/Recording-Check.ps1" -OutFile "C:\Temp\Scripts\Recording-Check.ps1"
+                        Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+                        Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force
+                        Add-MpPreference -ExclusionPath 'C:\Temp\Dump' | Out-Null
+                        & C:\temp\scripts\Record-VPN-Check.ps1
                         Start-Sleep 3
                         & C:\temp\scripts\Menu.ps1
                         return
