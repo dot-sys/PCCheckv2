@@ -186,7 +186,7 @@ $usnDump = $usnDump |
         "HardLinkChange",
         "SecurityChange",
         "DataExtend|DataTruncation"
-    )} | Sort-Object -Property * -Unique | Export-Csv -Path "C:\temp\dump\Journal\Raw\journal_overview.csv" -NoTypeInformation
+    )} | Sort-Object -Property * -Unique | Export-Csv -Path "C:\temp\dump\Journal\Raw\Journal_Overview.csv" -NoTypeInformation
 $usnDump | Where-Object { $_.'Extension' -eq ".pf" -and ($_.'UpdateReasons' -match "RenameOldName|RenameNewName") } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-File DeletedPF.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -eq 'FileCreate' -and $_.'Extension' -ne ".pf" } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Format-Table -HideTableHeaders | Out-File CreatedFiles.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -like 'FileDelete' } | Select-Object 'FilePath', 'UpdateTimestamp' | Out-String -Width 4096 | Out-File DeletedFiles.txt -Append -Width 4096
