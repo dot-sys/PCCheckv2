@@ -21,7 +21,7 @@ $mftDrives = Get-WmiObject Win32_LogicalDisk | Select-Object -ExpandProperty Dev
 foreach ($mftDriveLetter in $mftDrives) {
     & "C:\temp\dump\mftecmd.exe" -f "${mftDriveLetter}:\`$Extend\`$UsnJrnl:`$J" -m "${mftDriveLetter}:\`$MFT" --fl --csv "C:\Temp\Dump\MFT"
     
-    $mftFiles = Get-ChildItem "$MFTPath\*.csv"
+    $mftFiles = Get-ChildItem "$MFTPath\*.csv" | Select-Object -Unique
     foreach ($mftFile in $mftFiles) {
         $mftNewName = "${mftDriveLetter}_$($mftFile.Name)"
         $mftNewPath = "$MFTPath\$mftNewName"
