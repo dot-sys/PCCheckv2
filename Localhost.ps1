@@ -1,3 +1,18 @@
+# Checking Script
+# For safe and local quick-dumping of System logs and files
+#
+# Author:
+# Created by dot-sys under GPL-3.0 license
+# This script is not related to any external Project.
+#
+# Usage:
+# Use with Powershell 5.1 and NET 4.0 or higher.
+# Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
+# It is advised not to use this on your own.
+#
+# Version 2.0
+# 30 - October - 2024
+
 $port = 8080
 $webroot = "C:\temp\dump"
 $timeoutHours = 2
