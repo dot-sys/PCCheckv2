@@ -1,0 +1,368 @@
+<!-- 
+CSV Viewer
+Author: [dot-sys]
+Date: 2024-10-30
+
+Description:
+This HTML page allows users to view CSV files from specific sources with filter and search functionality. 
+It uses the PapaParse and DataTables libraries for parsing CSV files and enhancing table features.
+
+Libraries Used:
+1. PapaParse - https://www.papaparse.com/
+2. DataTables - https://datatables.net/
+
+==============================
+MIT License for DataTables:
+==============================
+DataTables | MIT License
+Copyright (C) 2008-2024, SpryMedia Ltd.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+==============================
+MIT License for PapaParse:
+==============================
+The MIT License (MIT)
+Copyright (c) 2015 Matthew Holt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Viewer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Questrial&display=swap');
+
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #2e2e2e;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background-color: #97c00e;
+        border-radius: 10px; 
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #bff119; 
+    }
+    
+    * {
+        scrollbar-width: thin; 
+        scrollbar-color: #97c00e #2e2e2e;
+    }
+    
+    body {
+        background-color: #1c1c1c;
+        color: #ffffff;
+        font-family: 'Questrial', sans-serif;
+        margin: 20px;
+        padding-bottom: 40px;
+    }
+    
+    .wrapper {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+    
+    input[type="text"] {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #97c00e;
+        background-color: #333333;
+        color: #aaa;
+        width: 100%;
+        border-radius: 5px;
+    }
+    
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+        table-layout: auto;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    
+    th, td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #444;
+    font-family: 'Questrial', sans-serif;
+    }
+    
+    th {
+        background-color: #97c00e;
+        color: #1c1c1c;
+    }
+    
+    tr:nth-child(even) {
+        background-color: #2e2e2e;
+    }
+    
+    tr:hover {
+        background-color: #596422;
+    }
+    
+    .filter-container {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .filter-container input {
+        background-color: #333;
+        color: #eee;
+        border: none;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid #97c00e;
+    }
+    
+    .filter-container input::placeholder {
+        color: #aaa;
+    }
+    
+    .button-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .button-container button {
+    padding: 10px 20px;
+    background-color: #97c00e;
+    color: #111111;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Questrial', sans-serif;
+    border-radius: 5px;
+    }
+    
+    .button-container button:hover {
+        background-color: #bff119;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    td {
+        word-break: break-all;
+    }
+    
+    #scrollToTopBtn {
+        position: fixed;
+        bottom: 45px;
+        right: 20px;
+        background-color: #97c00e;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        display: none;
+        z-index: 1000;
+        width: 50px;
+        height: 50px;
+    }
+    
+    #scrollToTopBtn:hover {
+        background-color: #c3fa0e;
+    }
+    
+    #scrollToTopBtn img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #2e2e2e;
+        color: #97c00e;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 16px;
+        font-weight: bold;
+        border-top: 1px solid #97c00e;
+    }
+
+    .footer-spacer {
+        height: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="button-container">
+      <button id="mftButton">MFT</button>
+      <button id="amcacheButton">AMCache</button>
+      <button id="shimcacheButton">Shimcache</button>
+      <button id="srumButton">SRUM</button>
+      <button id="shellbagsButton">Shellbags</button>
+      <button id="eventsButton">Events</button>
+      <button id="journalButton">Journal</button>
+      <button id="bamButton">BAM</button>
+      <button id="prefetchButton">Prefetch</button>
+    </div>
+    <input type="text" id="searchInput" placeholder="General Search">
+    <div class="filter-container" id="filterContainer"></div>
+    <div class="table-container"> 
+      <table id="csvTable"></table> 
+    </div> 
+    <div class="footer-spacer"></div>
+  </div>
+
+  <button id="scrollToTopBtn">
+    <img src="https://chelo.lat/up-arrow.svg" alt="Up Arrow">
+  </button>
+
+  <div class="footer" id="footerText">Current Evidence: </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
+  <script>
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    const footerText = document.getElementById('footerText');
+
+    window.addEventListener('scroll', () => {
+      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        scrollToTopBtn.style.display = 'block';
+      } else {
+        scrollToTopBtn.style.display = 'none';
+      }
+    });
+
+    scrollToTopBtn.addEventListener('click', () => {
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    });
+    
+    const csvTable = document.getElementById('csvTable');
+    const searchInput = document.getElementById('searchInput');
+    const filterContainer = document.getElementById('filterContainer');
+
+    document.getElementById('mftButton').addEventListener('click', () => loadCSV('http://localhost:8080/MFT/MFT.csv', 'MFT'));
+    document.getElementById('amcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/AMCache/AMCache_Overview.csv', 'AMCache'));
+    document.getElementById('shimcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/Shimcache/Shimcache.csv', 'Shimcache'));
+    document.getElementById('srumButton').addEventListener('click', () => loadCSV('http://localhost:8080/SRUM/SRUM.csv', 'SRUM'));
+    document.getElementById('shellbagsButton').addEventListener('click', () => loadCSV('http://localhost:8080/Shellbags/Shellbags.csv', 'Shellbags'));
+    document.getElementById('eventsButton').addEventListener('click', () => loadCSV('http://localhost:8080/Events/Events.csv', 'Events'));
+    document.getElementById('journalButton').addEventListener('click', () => loadCSV('http://localhost:8080/Journal/Raw/Journal.csv', 'Journal'));
+    document.getElementById('bamButton').addEventListener('click', () => loadCSV('http://localhost:8080/Registry/BamDam.csv', 'BAM'));
+    document.getElementById('prefetchButton').addEventListener('click', () => loadCSV('http://localhost:8080/Prefetch/Prefetch_Overview.csv', 'Prefetch'));
+
+    function loadCSV(url, fileName) {
+      footerText.textContent = `Current Evidence: ${fileName}`;
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.text();
+        })
+        .then(csvText => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              displayTable(results.data);
+            }
+          });
+        })
+        .catch(error => console.error('Error fetching the CSV file:', error));
+    }
+
+    function displayTable(data) {
+      csvTable.innerHTML = "";
+      filterContainer.innerHTML = "";
+
+      const headers = Object.keys(data[0]);
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+
+        const filterInput = document.createElement('input');
+        filterInput.setAttribute('placeholder', `Search ${header}`);
+        filterInput.addEventListener('keyup', () => filterTable());
+        filterContainer.appendChild(filterInput);
+      });
+
+      thead.appendChild(headerRow);
+      csvTable.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        headers.forEach(header => {
+          const td = document.createElement('td');
+          td.textContent = row[header];
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      csvTable.appendChild(tbody);
+      searchInput.value = "";
+      filterTable();
+    }
+
+    searchInput.addEventListener('keyup', filterTable);
+
+    function filterTable() {
+      const query = searchInput.value.toLowerCase();
+      const rows = csvTable.getElementsByTagName('tr');
+      const filterInputs = filterContainer.getElementsByTagName('input');
+
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let rowVisible = false;
+        let overallVisible = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(query));
+
+        if (!overallVisible) {
+          rows[i].style.display = 'none';
+          continue;
+        }
+
+        for (let j = 0; j < cells.length; j++) {
+          const cellText = cells[j].textContent.toLowerCase();
+          const filterValue = filterInputs[j].value.toLowerCase();
+
+          if (filterValue && !cellText.includes(filterValue)) {
+            rows[i].style.display = 'none';
+            rowVisible = false;
+            break;
+          } else {
+            rowVisible = true;
+          }
+        }
+        rows[i].style.display = rowVisible ? '' : 'none';
+      }
+    }
+  </script>
+</body>
+</html>
