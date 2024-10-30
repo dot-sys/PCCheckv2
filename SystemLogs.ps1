@@ -155,10 +155,6 @@ Get-ChildItem -Path $AMCachePath -File | Where-Object { $_.Name -notmatch '^AMCa
 
 C:\temp\dump\PECmd.exe -d "C:\Windows\Prefetch" --csv "C:\temp\dump\Prefetch" --csvf "Prefetch.csv"
 
-Import-Csv "C:\temp\dump\Prefetch\Prefetch.csv" | 
-Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
-Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
-
 function Headers {
     param (
         [string]$header,
