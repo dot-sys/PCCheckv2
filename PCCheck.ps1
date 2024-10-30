@@ -238,7 +238,6 @@ $EventsImp | Where-Object {
     $_.RuleTitle -notmatch "Credential Manager Enumerated|Powershell|pwsh|MSI Install|CodeIntegrity|Bits Job Created|RDS Sess" 
 } | Select-Object @{Name='Timestamp'; Expression={($_.Timestamp -as [datetime]).ToString('yyyy-MM-dd HH:mm:ss')}}, RuleTitle, Details, Level | Export-Csv -Path "C:\temp\dump\Events\Events_Overview.csv" -NoTypeInformation
 
-
 $PrefetchImp | 
 Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
 Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
@@ -524,7 +523,7 @@ elseif (Get-Content "C:\windows\inf\setupapi.dev.log" -Force | Select-String "vd
 
 $timeTampering = if (Get-WinEvent -FilterHashtable @{LogName = 'System'; ProviderName = 'Microsoft-Windows-Time-Service'; Level = 3 } -MaxEvents 1) { "Possible Time Tampering found in Eventlogs" }
 
-$hideTampering = ($combine | Where-Object { Test-Path $_ } | ForEach-Object { if ((Get-ChildItem -Force $_).Attributes -match "Hidden") { "Potential Hidden File Manipulation Detected: $_" } }) -join "`n"
+$hideTampering = ($combine | Where-Object { $_ -and (Test-Path $_) } | ForEach-Object { if ((Get-ChildItem -Force $_).Attributes -match "Hidden") { "Potential Hidden File Manipulation Detected: $_" } }) -join "`n"
 
 $wmicTampering = if (Select-String -Path "C:\Temp\Dump\Processes\Raw\explorer.txt" -Pattern "Process call|call create") { "Potential WMIC bypassing found in Explorer" }
 
