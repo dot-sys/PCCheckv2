@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30- October - 2024
+# 30 - October - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $SRUMPath = "C:\temp\dump\SRUM"
@@ -88,7 +88,7 @@ Where-Object {
 } |
 Group-Object -Property 'ExeInfo' |
 ForEach-Object { $_.Group | Sort-Object 'Timestamp' -Descending | Select-Object -First 1 } |
-Select-Object -Property 'Timestamp', 'ExeInfo', 'BackgroundBytesRead', 'BackgroundBytesWritten', 'ForegroundBytesRead', 'ForegroundBytesWritten' |
+Select-Object -Property 'Timestamp', 'ExeInfo', 'ForegroundBytesRead', 'ForegroundBytesWritten' |
 Sort-Object 'Timestamp' -Descending
 
 foreach ($entry in $SrumImp) {
@@ -105,7 +105,7 @@ $SrumImp | Export-Csv -Path "$SRUMPath\SRUM.csv" -NoTypeInformation -Encoding ut
 
 $SrumImp | 
 Where-Object { $_.ExeInfo -match "Zip\$|ziptemp|Rar\$|rartemp" } | 
-Select-Object -Property 'Timestamp', 'ExeInfo', 'BackgroundBytesRead', 'BackgroundBytesWritten', 'ForegroundBytesRead', 'ForegroundBytesWritten' | 
+Select-Object -Property 'Timestamp', 'ExeInfo', 'ForegroundBytesRead', 'ForegroundBytesWritten' | 
 Sort-Object 'Timestamp' -Descending |
 Export-Csv -Path "$SRUMPath\Compressed.csv" -NoT
 ypeInformation
@@ -154,6 +154,10 @@ Remove-Item "$AMCachePath\*.zip" -force
 Get-ChildItem -Path $AMCachePath -File | Where-Object { $_.Name -notmatch '^AMCache|USB' } | Move-Item -Destination 'C:\temp\dump\AMCache\Raw'
 
 C:\temp\dump\PECmd.exe -d "C:\Windows\Prefetch" --csv "C:\temp\dump\Prefetch" --csvf "Prefetch.csv"
+
+Import-Csv "C:\temp\dump\Prefetch\Prefetch.csv" | 
+Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
+Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
 
 function Headers {
     param (
@@ -541,5 +545,4 @@ Remove-Item -Path "C:\temp\Dump\SQLECMD\SQLECMD.exe" -Force
 Get-ChildItem -Path "C:\temp\Dump\SQLECMD" -Directory | Remove-Item -Recurse -Force
 Rename-Item -Path "C:\temp\dump\SQLECMD" -NewName "C:\temp\dump\BrowserHistory"
 
-# Eventlogs
 C:\temp\dump\hayabusa-2.17.0-win-x64.exe csv-timeline --live-analysis --no-wizard --clobber --output C:\temp\dump\Events\Events.csv
