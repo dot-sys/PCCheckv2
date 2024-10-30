@@ -234,6 +234,8 @@ $eventResults2 = $EventsImp | Where-Object { $_.RuleTitle -eq "Credential Manage
 Select-Object @{Name = 'Timestamp'; Expression = { ($_.Timestamp -as [datetime]).ToString("dd/MM/yyyy HH:mm:ss") } }, RuleTitle |
 ForEach-Object { "$($_.Timestamp) $($_.RuleTitle)" }
 
+$EventsImp | Select-Object Timestamp, RuleTitle, Details, Level | Export-Csv -Path "C:\temp\dump\Events\Events_Overview.csv" -NoTypeInformation
+
 $PrefetchImp | 
 Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
 Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
