@@ -33,15 +33,6 @@ $hashWordMap = $configJson.hashWordMap
 $dmppath = "C:\Temp\Dump"
 $scripttime = "Script-Run-Time: $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')"
 
-   "hashWordMap": {
-      "bf0357f48abbde2f8bb2210f9ccd6b1e5ed4403f": "Vanish",
-      "3dfbfe5b84444a24304ddab500aef1ab11ae034a": "Leet",
-      "33bac16d5a743e7d4b4402a02c16bd2ed0284b0e": "Leet",
-      "536de5eb8bbed75f4445d007bbcf59e287dc8e5c": "Skript",
-      "4c4939f8f28a2d834df88d3e3a26ee3f44f7cabc": "Hydrogen",
-      "6717c906deb0dbbb14968c4af9ec186650d3dd51": "Astra"
-  }
-
 Set-Location "$dmppath"
 $l1 = & { "`n-------------------"; }
 $l2 = & { "-------------------`n"; }
