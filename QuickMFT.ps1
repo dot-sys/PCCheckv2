@@ -111,9 +111,9 @@ function mftJoinSortAndSelectCsv {
     return $mftSelectedData
 }
     
-$mftFileListingColumns = 'Drive', 'FullPath', 'Extension', 'FileSize', 'Created0x10', 'LastModified0x10', 'ZoneIdContents'
-$mftFileListingData = mftJoinSortAndSelectCsv -mftFiles $mftFileListingFiles -mftSortColumn 'LastModified0x10' -mftSelectColumns $mftFileListingColumns
-$mftFileListingData | Export-Csv -Path "$MFTPath\MFT.csv" -NoTypeInformation
+$mftFileListingColumns = 'Drive', 'FullPath', 'Extension', 'FileSize', 'Created0x10', 'LastModified0x10'
+$mftFileListingData = mftJoinSortAndSelectCsv -mftFiles $mftFileListingFiles -mftSortColumn 'Created0x10' -mftSelectColumns $mftFileListingColumns
+$mftFileListingData | Where-Object { $_.FileSize -ne 0 } | Export-Csv -Path "$MFTPath\MFT.csv" -NoTypeInformation
     
 $mftOutputColumns = 'Drive', 'ParentPath', 'Name', 'Extension', 'UpdateTimestamp', 'UpdateReasons'
 $mftOutputData = mftJoinSortAndSelectCsv -mftFiles $mftOutputFiles -mftSortColumn 'UpdateTimestamp' -mftSelectColumns $mftOutputColumns
