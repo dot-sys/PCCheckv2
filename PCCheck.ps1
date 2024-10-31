@@ -238,14 +238,13 @@ $EventsImp | Where-Object {
     $_.RuleTitle -notmatch "Credential Manager Enumerated|Powershell|pwsh|MSI Install|CodeIntegrity|Bits Job Created|RDS Sess" 
 } | Sort-Object -Property @{Expression={
     switch ($_.Level) {
-        "Highest crit" {1}
+        "crit" {1}
         "high" {2}
         "med" {3}
         "low" {4}
         "info" {5}
-        default {6}
     }
-}} | Select-Object @{Name='Timestamp'; Expression={($_.Timestamp -as [datetime]).ToString('yyyy-MM-dd HH:mm:ss')}}, RuleTitle, Details, Level | Export-Csv -Path
+}} | Select-Object @{Name='Timestamp'; Expression={($_.Timestamp -as [datetime]).ToString('yyyy-MM-dd HH:mm:ss')}}, RuleTitle, Details, Level | Export-Csv -Path C:\temp\dump\Events\Events_Overview.csv -NoTypeInformation
 
 $PrefetchImp | 
 Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
@@ -260,15 +259,13 @@ $filtOverview = $MFTImp | Where-Object {
 }
 $filtOverview | Export-Csv -Path "C:\temp\dump\MFT\MFT_Overview.csv" -NoTypeInformation
 
-
-
 $hashFilePaths = @()
 foreach ($hash in $shaHashs) {
     $trimmedHash = $hash.Trim()
     if ($hashWordMap.PSObject.Properties[$trimmedHash]) {
         $hashWord = $hashWordMap.$trimmedHash
     } else {
-        $hashWord = "Unknown"  # Fallback if no match is found
+        $hashWord = "Unknown" 
     }
     $hashmatches = $AMCacheImp | Where-Object { $_.sha1.Trim() -ieq $trimmedHash }
     foreach ($match in $hashmatches) {
@@ -276,8 +273,8 @@ foreach ($hash in $shaHashs) {
     }
 }
 if ($hashFilePaths.Count -gt 0) {
-    $HashMatchings = "Found Hash matching during Importing:`n"  # Use `n for new line
-    $HashMatchings += ($hashFilePaths -join "`n")  # Use `n for new line
+    $HashMatchings = "Found Hash matching during Importing:`n" 
+    $HashMatchings += ($hashFilePaths -join "`n")  
 }
 $HashMatchings
 
