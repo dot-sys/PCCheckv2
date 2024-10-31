@@ -253,6 +253,13 @@ Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
 $AmCacheImp | 
 Select-Object LastWriteTime, FullPath, Size, FileExtension | 
 Export-Csv "C:\temp\dump\AmCache\AmCache_Overview.csv" -NoTypeInformation
+$twoMonth = (Get-Date).AddMonths(-2)
+$filtOverview = $MFTImp | Where-Object {
+    [datetime]$_.CreatedTimestamp -ge $twoMonth -and 
+    [int64]$_.FileSize -gt 2400000
+}
+$filtOverview | Export-Csv -Path "C:\temp\dump\MFT\MFT_Overview.csv" -NoTypeInformation
+
 
 
 $hashFilePaths = @()
