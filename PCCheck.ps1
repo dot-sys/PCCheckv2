@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30 - October - 2024
+# 31 - October - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $configJson = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dot-sys/cfg/master/cfg.json" 
@@ -318,8 +318,29 @@ $o1 = & {
     if ((Get-WinEvent -LogName Security -FilterXPath "*[System[(EventID=1102) and TimeCreated[timediff(@SystemTime) <= 604800000]]]")) { "Possible Event Log Clearing:"; Get-WinEvent -LogName Security -FilterXPath "*[System[(EventID=1102) and TimeCreated[timediff(@SystemTime) <= 604800000]]]" | Select-Object TimeCreated, Message }
     if (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -Filter *.exe | Where-Object { $_.Length -ge $FilesizeL -and $_.Length -le $FilesizeH }) { "Potential Suspicious File found in Recycle Bin - Size Match" }
 }
-$sysUptime = "Time since last Restart: $((New-TimeSpan -Start (Get-CimInstance Win32_OperatingSystem).LastBootUpTime -End (Get-Date)) | ForEach-Object { "$($_.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $_.Hours, $_.Minutes, $_.Seconds })"
-$sleepTime = "Time since last Sleep: $((New-TimeSpan -Start ((Get-WinEvent -FilterHashtable @{LogName='System'; Id=1; ProviderName='Microsoft-Windows-Power-Troubleshooter'} | Select-Object -First 1).TimeCreated) -End (Get-Date)) | ForEach-Object { "$($_.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $_.Hours, $_.Minutes, $_.Seconds })"
+
+$bootDescriptions = @{
+    '0x0' = 'restart'
+    '0x1' = 'hybrid boot'
+    '0x2' = 'resumed from hibernation'
+}
+
+$bootEvents = Get-WinEvent -ProviderName Microsoft-Windows-Kernel-Boot | 
+    Where-Object { $_.Message -match "boot type|boot options" } | 
+    Select-Object TimeCreated, Id, Message | 
+    Sort-Object TimeCreated -Descending
+
+$lastColdBoot = ($bootEvents | Where-Object { $_.Message -match 'boot type.*0x0' } | Select-Object -First 1 | ForEach-Object { 
+    $uptime = New-TimeSpan -Start $_.TimeCreated -End (Get-Date)
+    "Time since last Cold Boot: $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds 
+})
+
+$lastRestart = ($bootEvents | Select-Object -First 1 | ForEach-Object { 
+    if ($_.Message -match '0x(0|1|2)') { 
+        $uptime = New-TimeSpan -Start $_.TimeCreated -End (Get-Date)
+        "Time since last Restart ($($bootDescriptions[$matches[0]])): $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds
+    }
+})
 
 $usbPNPDevices = Get-PnpDevice | Where-Object { $_.InstanceId.StartsWith('USBSTOR') }
 $usbPropertiesList = @()
@@ -698,7 +719,7 @@ $Cheats7 = $HashMatchings
 
 if ($Cheats1 -or $Cheats2 -or $Cheats3 -or $Cheats4 -or $Cheats5 -or $Cheats6 -or $Cheats7) { $Cheatsheader = $h7 }
 
-@($Cheatsheader; $cheats1; $cheats2; $cheats3; $cheats4; $cheats5; $cheats6; $h1; $o1; $susJournal; $browserSuspicion; $minusSettings; $settingslastModified; $t3; $sUptime; $sysUptime; $sleepTime; $h6; $usbOutput; $usbExecutions; $h2; $Tamperings; $h3; $threats; $h4; $eventResults; $h5; $t1; $combine; $t2; $dps1; $r; $t4; $noFilesFound) | Add-Content C:\Temp\Dump\Results.txt
+@($Cheatsheader; $cheats1; $cheats2; $cheats3; $cheats4; $cheats5; $cheats6; $h1; $o1; $susJournal; $browserSuspicion; $minusSettings; $settingslastModified; $t3; $sUptime; $lastColdBoot; $lastRestart; $h6; $usbOutput; $usbExecutions; $h2; $Tamperings; $h3; $threats; $h4; $eventResults; $h5; $t1; $combine; $t2; $dps1; $r; $t4; $noFilesFound) | Add-Content C:\Temp\Dump\Results.txt
 
 Remove-Item -Path "C:\Temp\Dump\config", "C:\Temp\Dump\logs", "C:\Temp\Dump\rules", "C:\Temp\Dump\RECmd", "C:\Temp\Dump\Events\Haya", "C:\Temp\Dump\Events\Raw" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Temp\Dump\*.exe", "C:\Temp\Dump\*.zip", "C:\Temp\Dump\Detections.txt" -Force -ErrorAction SilentlyContinue
