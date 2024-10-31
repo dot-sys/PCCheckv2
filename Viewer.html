@@ -266,7 +266,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     const searchInput = document.getElementById('searchInput');
     const filterContainer = document.getElementById('filterContainer');
 
-    document.getElementById('mftButton').addEventListener('click', () => loadCSV('http://localhost:8080/MFT/MFT.csv', 'MFT'));
+    document.getElementById('mftButton').addEventListener('click', () => loadCSV('http://localhost:8080/MFT/MFT_Overview.csv', 'MFT'));
     document.getElementById('amcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/AMCache/AMCache_Overview.csv', 'AMCache'));
     document.getElementById('shimcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/Shimcache/Shimcache.csv', 'Shimcache'));
     document.getElementById('srumButton').addEventListener('click', () => loadCSV('http://localhost:8080/SRUM/SRUM.csv', 'SRUM'));
