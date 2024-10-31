@@ -155,7 +155,7 @@ Import-Csv "MFT.csv" | ForEach-Object {
         "$($_.Drive):\UNKNOWNPATH"
     }
     
-    $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("dd-MM-yyyy HH:mm:ss")
+    $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("yyyy-MM-dd HH:mm:ss")
     
     [PSCustomObject]@{
         CreatedTimestamp = $FormattedTimestamp
@@ -165,7 +165,7 @@ Import-Csv "MFT.csv" | ForEach-Object {
         LastModified     = $_.LastModified0x10
     }
     
-} | Export-Csv "C:\temp\dump\MFT\MFT2.csv" -NoTypeInformation
+} | Sort-Object CreatedTimestamp -Descending | Export-Csv "C:\temp\dump\MFT\MFT2.csv" -NoTypeInformation
     
 Remove-Item "C:\temp\dump\MFT\Journal.csv"
 Remove-Item "C:\temp\dump\MFT\MFT.csv"
