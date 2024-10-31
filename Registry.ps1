@@ -100,3 +100,12 @@ $shellbagImport | Select-Object LastWriteTime, AbsolutePath, CreatedOn, Modified
 Remove-Item "C:\temp\dump\shellbags\*usrclass.csv" -Force
 Get-ChildItem "C:\temp\dump\Shellbags\*SBECmd*" | Remove-Item
 Get-ChildItem "C:\Temp\Dump\Registry" | Where-Object { $_.Name -like "*_*" } | Remove-Item -Force
+
+$bamimp = Import-Csv -Path "C:\temp\dump\Registry\BamDam.csv"
+$filtered = $bamimp | Where-Object { $_.Program -like '*\Device\HarddiskVolume*' }
+$filtered | ForEach-Object { 
+    $_.ExecutionTime = $_.ExecutionTime.Substring(0, [math]::Min(19, $_.ExecutionTime.Length))
+    $_ 
+} | Export-Csv -Path "C:\temp\dump\Registry\Bam_Overview.csv" -NoTypeInformation
+
+Rename-Item "C:\temp\dump\Registry\BamDam.csv" "C:\temp\dump\Registry\Bam.csv"
