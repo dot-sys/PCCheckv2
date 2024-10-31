@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30 - October - 2024
+# 31 - October - 2024
 
 $ErrorActionPreference = "SilentlyContinue"
 $MFTPath = "C:\temp\dump\MFT"
@@ -148,7 +148,7 @@ Import-Csv "MFT.csv" | ForEach-Object {
         "$($_.Drive):\UNKNOWNPATH"
     }
     
-    $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("dd-MM-yyyy HH:mm:ss")
+    $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("yyyy-MM-dd HH:mm:ss")
     
     [PSCustomObject]@{
         CreatedTimestamp = $FormattedTimestamp
