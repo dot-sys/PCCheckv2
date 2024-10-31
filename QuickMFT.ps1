@@ -76,7 +76,7 @@ Get-ChildItem -Path $mftSourcePath -File | Where-Object {
     $mftInputFile = $_.FullName
     $mftOutputFile = Join-Path -Path $mftSourcePath -ChildPath "$($_.BaseName)_filtered.csv"
     
-    Import-Csv -Path $mftInputFile | Where-Object { $_.Extension -match '\.(exe|rar|zip|7z|bat|ps1|identifier|rpf|dll)$' } | Export-Csv -Path $mftOutputFile -NoTypeInformation
+    Import-Csv -Path $mftInputFile | Where-Object { $_.Extension -match '\.(exe|rar|zip|identifier|rpf|dll)$' } | Export-Csv -Path $mftOutputFile -NoTypeInformation
 }
     
 $mftSourcePath = "$MFTPath\Raw"
