@@ -221,7 +221,7 @@ $FaviconsImp = Import-Csv C:\Temp\Dump\BrowserHistory\Favicons.csv
 $EventsImp = Import-Csv C:\Temp\Dump\Events\Events.csv
 $JournalImp = Import-Csv C:\Temp\Dump\Journal\Raw\Journal.csv
 $MFTImp = Import-Csv C:\Temp\Dump\MFT\MFT.csv
-$BamImp = Import-Csv C:\Temp\Dump\Registry\BamDam.csv
+$BamImp = Import-Csv C:\Temp\Dump\Registry\Bam.csv
 $PrefetchImp = Import-Csv C:\Temp\Dump\Prefetch\Prefetch.csv
 $ShimcacheImp = Import-Csv C:\Temp\Dump\Shimcache\Shimcache.csv
 $SRUMImp = Import-Csv C:\Temp\Dump\SRUM\SRUM.csv
@@ -236,7 +236,16 @@ ForEach-Object { "$($_.Timestamp) $($_.RuleTitle)" }
 
 $EventsImp | Where-Object { 
     $_.RuleTitle -notmatch "Credential Manager Enumerated|Powershell|pwsh|MSI Install|CodeIntegrity|Bits Job Created|RDS Sess" 
-} | Select-Object @{Name='Timestamp'; Expression={($_.Timestamp -as [datetime]).ToString('yyyy-MM-dd HH:mm:ss')}}, RuleTitle, Details, Level | Export-Csv -Path "C:\temp\dump\Events\Events_Overview.csv" -NoTypeInformation
+} | Sort-Object -Property @{Expression={
+    switch ($_.Level) {
+        "Highest crit" {1}
+        "high" {2}
+        "med" {3}
+        "low" {4}
+        "info" {5}
+        default {6}
+    }
+}} | Select-Object @{Name='Timestamp'; Expression={($_.Timestamp -as [datetime]).ToString('yyyy-MM-dd HH:mm:ss')}}, RuleTitle, Details, Level | Export-Csv -Path
 
 $PrefetchImp | 
 Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
