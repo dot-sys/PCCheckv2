@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30 - October - 2024
+# 01 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue"
 $MFTPath = "C:\temp\dump\MFT"
@@ -187,7 +187,7 @@ $usnDump = $usnDump |
         "SecurityChange",
         "DataExtend|DataTruncation"
     )} | Sort-Object -Property * -Unique
-$usnDump = $usnDump | Where-Object { $_.Extension -in @('.exe', '.dll', '.zip', '.rar') } | Sort-Object -Property UpdateTimestamp -Descending | Export-Csv -Path "C:\temp\dump\Journal\Raw\Journal_Overview.csv" -NoTypeInformation
+$usnDump | Where-Object { $_.Extension -in @('.exe', '.dll', '.zip', '.rar') } | Sort-Object -Property UpdateTimestamp -Descending | Export-Csv -Path "C:\temp\dump\Journal\Raw\Journal_Overview.csv" -NoTypeInformation
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileCreate' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Format-Table -HideTableHeaders | Out-File CreatedFiles.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileDelete' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Out-File DeletedFiles.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'UpdateReasons' -match 'RenameOldName' -or $_.'UpdateReasons' -match 'RenameNewName' } | Sort-Object 'UpdateTimestamp' -Descending | Group-Object "UpdateTimestamp" | Format-Table -AutoSize @{l = "Timestamp"; e = { $_.Name } }, @{l = "Old Name"; e = { Split-Path -Path $_.Group.'FilePath'[0] -Leaf } }, @{l = "New Name"; e = { Split-Path -Path $_.Group.'FilePath'[1] -Leaf } } | Out-File -FilePath Renamed_Files.txt -Append -Width 4096
