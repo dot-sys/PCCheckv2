@@ -250,6 +250,7 @@ $PrefetchImp |
 Select-Object LastRun, SourceFilename, RunCount, Volume1Serial | 
 Export-Csv "C:\temp\dump\prefetch\Prefetch_Overview.csv" -NoTypeInformation
 $AmCacheImp | 
+Where-Object { $_.Size -gt 2100000 } | 
 Select-Object LastWriteTime, FullPath, Size, FileExtension | 
 Export-Csv "C:\temp\dump\AmCache\AmCache_Overview.csv" -NoTypeInformation
 $twoMonth = (Get-Date).AddMonths(-2)
@@ -306,7 +307,6 @@ $o1 = & {
     "Windows Version: $((Get-WmiObject -Class Win32_OperatingSystem).Caption), Build: $((Get-WmiObject -Class Win32_OperatingSystem).BuildNumber)"
     $windowsInstallDate = [Management.ManagementDateTimeConverter]::ToDateTime((Get-WmiObject Win32_OperatingSystem).InstallDate).ToString('dd/MM/yyyy')
     "Windows Installation: $windowsInstallDate"
-    "Last Boot up Time: $((Get-CimInstance Win32_OperatingSystem).LastBootUpTime | Get-Date -Format 'dd/MM/yyyy HH:mm:ss')" 
     $sruDBCreationDate = (Get-Item "C:\Windows\System32\sru\SRUDB.dat").CreationTime.ToString('dd/MM/yyyy')
     $AMCacheCreationDate = (Get-Item "C:\Windows\AppCompat\Programs\Amcache.hve").CreationTime.ToString('dd/MM/yyyy')
     $EventlogCreationDate = (Get-Item "C:\Windows\System32\winevt\Logs\Microsoft-Windows-Windows Defender%4Operational.evtx").CreationTime.ToString('dd/MM/yyyy')
@@ -343,6 +343,8 @@ $lastRestart = ($bootEvents | Select-Object -First 1 | ForEach-Object {
         "Time since last Restart ($($bootDescriptions[$matches[0]])): $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds
     }
 })
+
+$LastBoot = "Last Boot up Time: $((Get-CimInstance Win32_OperatingSystem).LastBootUpTime | Get-Date -Format 'dd/MM/yyyy HH:mm:ss')" 
 
 $usbPNPDevices = Get-PnpDevice | Where-Object { $_.InstanceId.StartsWith('USBSTOR') }
 $usbPropertiesList = @()
@@ -728,7 +730,7 @@ $Cheats7 = $HashMatchings
 
 if ($Cheats1 -or $Cheats2 -or $Cheats3 -or $Cheats4 -or $Cheats5 -or $Cheats6 -or $Cheats7) { $Cheatsheader = $h7 }
 
-@($Cheatsheader; $cheats1; $cheats2; $cheats3; $cheats4; $cheats5; $cheats6; $h1; $o1; $susJournal; $browserSuspicion; $minusSettings; $settingslastModified; $t3; $sUptime; $lastColdBoot; $lastRestart; $h6; $usbOutput; $usbExecutions; $h2; $Tamperings; $h3; $threats; $h4; $eventResults; $h5; $t1; $combine; $t2; $dps1; $r; $t4; $noFilesFound) | Add-Content C:\Temp\Dump\Results.txt
+@($Cheatsheader; $cheats1; $cheats2; $cheats3; $cheats4; $cheats5; $cheats6; $h1; $o1; $susJournal; $browserSuspicion; $minusSettings; $settingslastModified; $t3; $sUptime; $lastColdBoot; $lastRestart; $LastBoot; $h6; $usbOutput; $usbExecutions; $h2; $Tamperings; $h3; $threats; $h4; $eventResults; $h5; $t1; $combine; $t2; $dps1; $r; $t4; $noFilesFound) | Add-Content C:\Temp\Dump\Results.txt
 
 Remove-Item -Path "C:\Temp\Dump\config", "C:\Temp\Dump\logs", "C:\Temp\Dump\rules", "C:\Temp\Dump\RECmd", "C:\Temp\Dump\Events\Haya", "C:\Temp\Dump\Events\Raw" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\Temp\Dump\*.exe", "C:\Temp\Dump\*.zip", "C:\Temp\Dump\Detections.txt" -Force -ErrorAction SilentlyContinue
