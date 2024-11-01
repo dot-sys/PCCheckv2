@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30 - October - 2024
+# 01 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 function Show-MainMenu {
@@ -174,39 +174,46 @@ do {
                 $programsChoice = Show-ProgramsMenu
                 switch ($programsChoice) {
                     1 {
-                        Write-Host "`n`nDownloading Timeline Explorer..." -ForegroundColor yellow
-                        (New-Object System.Net.WebClient).DownloadFile("https://download.mikestammer.com/net6/TimelineExplorer.zip", "C:\temp\dump\TimelineExplorer.zip")
-                        Unzip -zipFilePath "C:\temp\dump\TimelineExplorer.zip" -destinationPath "C:\temp\TimelineExplorer"
-                        Write-Host "Timeline Explorer downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
+                        Write-Host "`n`nDownloading CSVFileView..." -ForegroundColor yellow
+                        (New-Object System.Net.WebClient).DownloadFile("https://www.nirsoft.net/utils/csvfileview-x64.zip", "C:\temp\dump\CSVFileView.zip")
+                        Unzip -zipFilePath "C:\temp\dump\CSVFileView.zip" -destinationPath "C:\temp\dump\CSVFileView"
+                        Write-Host "CSVFileView downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
                         Start-Sleep 5
                     }
                     2 {
-                        Write-Host "`n`nDownloading Registry Explorer..." -ForegroundColor yellow
-                        (New-Object System.Net.WebClient).DownloadFile("https://download.mikestammer.com/net6/RegistryExplorer.zip", "C:\temp\dump\RegistryExplorer.zip")
-                        Unzip -zipFilePath "C:\temp\dump\RegistryExplorer.zip" -destinationPath "C:\temp\RegistryExplorer"
-                        Write-Host "Registry Explorer downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
+                        Write-Host "`n`nDownloading Timeline Explorer..." -ForegroundColor yellow
+                        (New-Object System.Net.WebClient).DownloadFile("https://download.mikestammer.com/net6/TimelineExplorer.zip", "C:\temp\dump\TimelineExplorer.zip")
+                        Unzip -zipFilePath "C:\temp\dump\TimelineExplorer.zip" -destinationPath "C:\temp\dump\TimelineExplorer"
+                        Write-Host "Timeline Explorer downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
                         Start-Sleep 5
                     }
                     3 {
+                        Write-Host "`n`nDownloading Registry Explorer..." -ForegroundColor yellow
+                        (New-Object System.Net.WebClient).DownloadFile("https://download.mikestammer.com/net6/RegistryExplorer.zip", "C:\temp\dump\RegistryExplorer.zip")
+                        Unzip -zipFilePath "C:\temp\dump\RegistryExplorer.zip" -destinationPath "C:\temp\dump\RegistryExplorer"
+                        Write-Host "Registry Explorer downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
+                        Start-Sleep 5
+                    }
+                    4 {
                         Write-Host "`n`nOpening Echo Website" -ForegroundColor yellow
                         Start-Process "http://dl.echo.ac/tool/journal"
                         Write-Host "Echo Website opened. Returning to Programs Menu." -ForegroundColor green
                         Start-Sleep 5
                     }
-                    4 {
+                    5 {
                         Write-Host "`n`nDownloading WinprefetchView..." -ForegroundColor yellow
                         (New-Object System.Net.WebClient).DownloadFile("https://www.nirsoft.net/utils/winprefetchview.zip", "C:\temp\dump\WinprefetchView.zip")
-                        Unzip -zipFilePath "C:\temp\dump\WinprefetchView.zip" -destinationPath "C:\temp\WinprefetchView"
+                        Unzip -zipFilePath "C:\temp\dump\WinprefetchView.zip" -destinationPath "C:\temp\dump\WinprefetchView"
                         Write-Host "WinprefetchView downloaded and extracted successfully. Returning to Programs Menu." -ForegroundColor green
                         Start-Sleep 5
                     }
-                    5 {
+                    6 {
                         Write-Host "`n`nOpening System Informer Website" -ForegroundColor yellow
                         Start-Process "https://systeminformer.sourceforge.io/canary"
                         Write-Host "System Informer Website opened. Returning to Programs Menu." -ForegroundColor green
                         Start-Sleep 5
                     }
-                    6 {
+                    7 {
                         Write-Host "`n`nDownloading Everything..." -ForegroundColor yellow
                         (New-Object System.Net.WebClient).DownloadFile("https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe", "C:\temp\dump\Everything.exe")
                         Write-Host "Everything downloaded successfully. Returning to Programs Menu." -ForegroundColor green
@@ -217,7 +224,7 @@ do {
                         Write-Host "`n`nInvalid option selected. Returning to Programs Menu." -ForegroundColor red
                         Start-Sleep 3
                     }
-                }
+                }                
             } while ($programsChoice -ne 0)
         }
         "clean" {
@@ -225,13 +232,13 @@ do {
         }
         "0" {
             Write-Host "`n`nExiting script." -ForegroundColor red
-            Start-Sleep 3
+            Start-Sleep 2
             Clear-Host
             return
         }
         default {
             Write-Host "`n`nInvalid option selected. Please try again." -ForegroundColor red
-            Start-Sleep 3
+            Start-Sleep 2
         }
     }
 } while ($mainChoice -ne 0)
