@@ -255,9 +255,11 @@ Export-Csv "C:\temp\dump\AmCache\AmCache_Overview.csv" -NoTypeInformation
 $twoMonth = (Get-Date).AddMonths(-2)
 $filtOverview = $MFTImp | Where-Object {
     [datetime]$_.CreatedTimestamp -ge $twoMonth -and 
-    [int64]$_.FileSize -gt 2100000
-}
+    [int64]$_.FileSize -gt 2100000 -and 
+    $_.Extension -ne ".dll"
+} | Select-Object CreatedTimestamp, FilePath, FileSize, Extension -Unique
 $filtOverview | Export-Csv -Path "C:\temp\dump\MFT\MFT_Overview.csv" -NoTypeInformation
+
 
 $hashFilePaths = @()
 foreach ($hash in $shaHashs) {
