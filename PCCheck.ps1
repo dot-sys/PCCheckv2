@@ -753,7 +753,7 @@ if ($response -eq 'Y') {
     Start-Process powershell -ArgumentList '-File "C:\Temp\Scripts\Localhost.ps1"' -WindowStyle Hidden
     Start-Sleep 1
     Start-Process "http://localhost:8080/viewer.html"
-    Start-Process -FilePath "notepad.exe" -ArgumentList "C:\temp\dump\results.txt"
+    #Start-Process -FilePath "notepad.exe" -ArgumentList "C:\temp\dump\results.txt"
     Write-Host "`n`n`n`tResults will open" -Foregroundcolor Green
     Write-Host "`tReturning to Menu in " -NoNewline 
     Write-Host "3 " -NoNewLine -ForegroundColor Magenta
