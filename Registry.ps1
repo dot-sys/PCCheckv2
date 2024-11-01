@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 30 - October - 2024
+# 01 - Novermber - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $dmppath = "C:\Temp\Dump"
@@ -83,7 +83,7 @@ Import-Csv "$registryPath\ETW_SYSTEM.csv" |
 
 C:\temp\dump\AppCompatCacheParser.exe -t --csv C:\temp\dump\shimcache --csvf Shimcache.csv
 $shimtemp = "$shimcachepath\Shimcache_temp.csv"
-Import-Csv "$shimcachepath\Shimcache.csv" | Where-Object { -not ($_.Path -match '^[0-9]') } | Select-Object LastModifiedTimeUTC, Path, Executed | Sort-Object Path -Descending -Unique | Export-Csv $shimtemp -NoTypeInformation
+Import-Csv "$shimcachepath\Shimcache.csv" | Where-Object { -not ($_.Path -match '^[0-9]') } | Select-Object LastModifiedTimeUTC, Path, Executed | Sort-Object LastModifiedTimeUTC -Descending -Unique | Export-Csv $shimtemp -NoTypeInformation
 Move-Item -Path $shimtemp -Destination "$shimcachepath\Shimcache.csv" -Force
 
 C:\Temp\Dump\SBECmd.exe -d "$env:LocalAppData\Microsoft\Windows" --csv C:\temp\dump\Shellbags | Out-Null
@@ -102,10 +102,10 @@ Get-ChildItem "C:\temp\dump\Shellbags\*SBECmd*" | Remove-Item
 Get-ChildItem "C:\Temp\Dump\Registry" | Where-Object { $_.Name -like "*_*" } | Remove-Item -Force
 
 $bamimp = Import-Csv -Path "C:\temp\dump\Registry\BamDam.csv"
-$filtered = $bamimp | Where-Object { $_.Program -like '*\Device\HarddiskVolume*' }
-$filtered | ForEach-Object { 
+$bamfiltered = $bamimp | Where-Object { $_.Program -like '*\Device\HarddiskVolume*' }
+$bamfiltered | ForEach-Object { 
     $_.ExecutionTime = $_.ExecutionTime.Substring(0, [math]::Min(19, $_.ExecutionTime.Length))
     $_ 
-} | Export-Csv -Path "C:\temp\dump\Registry\Bam_Overview.csv" -NoTypeInformation
+} | Sort-Object -Property ExecutionTime -Descending | Export-Csv -Path "C:\temp\dump\Registry\Bam_Overview.csv" -NoTypeInformation
 
 Rename-Item "C:\temp\dump\Registry\BamDam.csv" "C:\temp\dump\Registry\Bam.csv"
