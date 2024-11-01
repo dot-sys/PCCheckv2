@@ -1,7 +1,7 @@
 <!-- 
 CSV Viewer
 Author: [dot-sys]
-Date: 2024-10-30
+Date: 2024-11-01
 
 Description:
 This HTML page allows users to view CSV files from specific sources with filter and search functionality. 
@@ -70,7 +70,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     
     body {
         background-color: #1c1c1c;
-        color: #ffffff;
         font-family: 'Questrial', sans-serif;
         margin: 20px;
         padding-bottom: 40px;
@@ -101,15 +100,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     }
     
     th, td {
-    padding: 8px;
-    text-align: left;
-    border: 1px solid #444;
-    font-family: 'Questrial', sans-serif;
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #444;
+        font-family: 'Questrial', sans-serif;
     }
     
     th {
         background-color: #97c00e;
         color: #1c1c1c;
+    }
+
+    td {
+        color: #e0e0e0;
     }
     
     tr:nth-child(even) {
@@ -129,7 +132,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     
     .filter-container input {
         background-color: #333;
-        color: #eee;
+        color: #aaa;
         border: none;
         padding: 10px;
         margin: 5px;
@@ -147,16 +150,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     }
     
     .button-container button {
-    padding: 10px 20px;
-    background-color: #97c00e;
-    color: #111111;
-    border: none;
-    margin: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    font-family: 'Questrial', sans-serif;
-    border-radius: 5px;
+        padding: 10px 20px;
+        background-color: #97c00e;
+        color: #111111;
+        border: none;
+        margin: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        font-family: 'Questrial', sans-serif;
+        border-radius: 5px;
     }
     
     .button-container button:hover {
@@ -168,11 +171,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     }
     
     td {
-    word-break: break-all;
-    min-width: 150px;
+        word-break: break-all;
+        min-width: 150px;
     }
 
-    
     #scrollToTopBtn {
         position: fixed;
         bottom: 45px;
@@ -215,6 +217,26 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     .footer-spacer {
         height: 10px;
     }
+
+    #fileDisplayArea {
+        background-color: #212121;
+        color: #aaaaaa;
+        width: 80%;
+        max-height: 65vh;
+        padding: 2%;
+        border: 1px solid #97c00e;
+        border-radius: 8px;
+        overflow-y: auto;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -229,6 +251,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <button id="journalButton">Journal</button>
       <button id="bamButton">BAM</button>
       <button id="prefetchButton">Prefetch</button>
+      <button id="browserButton">Browser</button>
+      <button id="resultsButton">Results</button>
     </div>
     <input type="text" id="searchInput" placeholder="General Search">
     <div class="filter-container" id="filterContainer"></div>
@@ -243,11 +267,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   </button>
 
   <div class="footer" id="footerText">Current Evidence: </div>
+  
+  <pre id="fileDisplayArea"></pre>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.2.0/papaparse.min.js"></script>
   <script>
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     const footerText = document.getElementById('footerText');
+    const csvTable = document.getElementById('csvTable');
+    const searchInput = document.getElementById('searchInput');
+    const filterContainer = document.getElementById('filterContainer');
+    const fileDisplayArea = document.getElementById('fileDisplayArea');
 
     window.addEventListener('scroll', () => {
       if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
@@ -262,10 +292,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       document.documentElement.scrollTop = 0;
     });
     
-    const csvTable = document.getElementById('csvTable');
-    const searchInput = document.getElementById('searchInput');
-    const filterContainer = document.getElementById('filterContainer');
-
     document.getElementById('mftButton').addEventListener('click', () => loadCSV('http://localhost:8080/MFT/MFT_Overview.csv', 'MFT'));
     document.getElementById('amcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/AMCache/AMCache_Overview.csv', 'AMCache'));
     document.getElementById('shimcacheButton').addEventListener('click', () => loadCSV('http://localhost:8080/Shimcache/Shimcache.csv', 'Shimcache'));
@@ -275,9 +301,30 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     document.getElementById('journalButton').addEventListener('click', () => loadCSV('http://localhost:8080/Journal/Raw/Journal_Overview.csv', 'Journal'));
     document.getElementById('bamButton').addEventListener('click', () => loadCSV('http://localhost:8080/Registry/Bam_Overview.csv', 'BAM'));
     document.getElementById('prefetchButton').addEventListener('click', () => loadCSV('http://localhost:8080/Prefetch/Prefetch_Overview.csv', 'Prefetch'));
+    document.getElementById('browserButton').addEventListener('click', () => loadCSV('http://localhost:8080/Browserhistory/Browserhistory.csv', 'Browser History'));
+    document.getElementById('resultsButton').addEventListener('click', () => loadText('http://localhost:8080/Results.txt', 'Results'));
+
+    function loadText(url, fileName) {
+      footerText.textContent = `Current Evidence: ${fileName}`;
+      clearPreviousContent();
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.text();
+        })
+        .then(data => {
+          fileDisplayArea.innerText = data;
+          fileDisplayArea.style.display = 'block';
+        })
+        .catch(error => {
+          fileDisplayArea.innerText = "Error loading file: " + error;
+          fileDisplayArea.style.display = 'block';
+        });
+    }
 
     function loadCSV(url, fileName) {
       footerText.textContent = `Current Evidence: ${fileName}`;
+      clearPreviousContent();
       fetch(url)
         .then(response => {
           if (!response.ok) throw new Error('Network response was not ok');
@@ -293,6 +340,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
           });
         })
         .catch(error => console.error('Error fetching the CSV file:', error));
+    }
+
+    function clearPreviousContent() {
+      csvTable.innerHTML = "";
+      filterContainer.innerHTML = "";
+      fileDisplayArea.innerText = "";
+      fileDisplayArea.style.display = 'none';
     }
 
     function displayTable(data) {
