@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 31 - October - 2024
+# 01 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $configJson = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dot-sys/cfg/master/cfg.json" 
@@ -643,14 +643,21 @@ if ($CheatThreats) {
 
 $Cheats3 = $mftImp | Where-Object { 
     $_.Filepath -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox" -or 
-    $_.Filesize -in $fsSkript, $fsLeet, $fsAstra, $fsHydro, $fsAbby, $fsHitbox, $fsRo9an
+    $_.Filesize -in $fsSkript, $fsLeet, $fsAstra, $fsHydro, $fsAbby, $fsHitbox, $fsRo9an 
 } | Select-Object -ExpandProperty Filepath -Unique
+
+$Cheats3 += $paths | Where-Object { 
+    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox" 
+}
+
+$Cheats3 = $Cheats3 | Sort-Object -Unique
 
 if ($Cheats3.Count -gt 0) {
     $headerC3 = "`nSevere Traces of Cheats found on Filesystem:`n"
     $formattedC3 = $Cheats3 | Sort-Object -Unique | ForEach-Object { "`t$_" }
     $Cheats3 = @($headerC3) + $formattedC3
 }
+
 $Cheats4 = $journalPaths | Where-Object { 
     $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox"
 }
