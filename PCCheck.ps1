@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 01 - November - 2024
+# 03 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $configJson = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dot-sys/cfg/master/cfg.json" 
@@ -325,11 +325,17 @@ $bootDescriptions = @{
     '0x0' = 'restart'
     '0x1' = 'hybrid boot'
     '0x2' = 'resumed from hibernation'
+    'lowPowerState' = 'hybrid boot or sleep'
 }
 
-$bootEvents = Get-WinEvent -ProviderName Microsoft-Windows-Kernel-Boot | 
-    Where-Object { $_.Message -match "boot type|boot options" } | 
-    Select-Object TimeCreated, Id, Message | 
+$bootEvents = Get-WinEvent -ProviderName Microsoft-Windows-Kernel-Boot |
+    Where-Object { $_.Message -match "boot type|boot options" } |
+    Select-Object TimeCreated, Id, Message |
+    Sort-Object TimeCreated -Descending
+
+$lowPowerEvents = Get-WinEvent -LogName System -FilterXPath "*[System[EventID=1]]" |
+    Where-Object { $_.Message -match "returned from a low power state" } |
+    Select-Object TimeCreated, Id, Message |
     Sort-Object TimeCreated -Descending
 
 $lastColdBoot = ($bootEvents | Where-Object { $_.Message -match 'boot type.*0x0' } | Select-Object -First 1 | ForEach-Object { 
@@ -337,12 +343,20 @@ $lastColdBoot = ($bootEvents | Where-Object { $_.Message -match 'boot type.*0x0'
     "Time since last Cold Boot: $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds 
 })
 
-$lastRestart = ($bootEvents | Select-Object -First 1 | ForEach-Object { 
-    if ($_.Message -match '0x(0|1|2)') { 
-        $uptime = New-TimeSpan -Start $_.TimeCreated -End (Get-Date)
-        "Time since last Restart ($($bootDescriptions[$matches[0]])): $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds
+$lastRestartEvent = ($bootEvents + $lowPowerEvents | Sort-Object TimeCreated -Descending | Select-Object -First 1)
+
+$lastRestart = if ($lastRestartEvent) {
+    $eventType = if ($lastRestartEvent.Id -eq 1 -and $lastRestartEvent.Message -match "returned from a low power state") {
+        $bootDescriptions['lowPowerState']
     }
-})
+    elseif ($lastRestartEvent.Message -match '0x(0|1|2)') {
+        $bootDescriptions[$matches[0]]
+    }
+    $uptime = New-TimeSpan -Start $lastRestartEvent.TimeCreated -End (Get-Date)
+    "Time since last Restart ($eventType): $($uptime.Days) Days, {0:D2}:{1:D2}:{2:D2}" -f $uptime.Hours, $uptime.Minutes, $uptime.Seconds
+} else {
+    "No recent restart events found."
+}
 
 $LastBoot = "Last Boot up Time: $((Get-CimInstance Win32_OperatingSystem).LastBootUpTime | Get-Date -Format 'dd/MM/yyyy HH:mm:ss')" 
 
@@ -463,10 +477,10 @@ if ($ShimcacheMatches) {
 
 Write-Host "   Sorting and Filtering Evidences"-ForegroundColor yellow
 $procPaths = Get-Content "C:\Temp\Dump\Processes\Raw\explorer.txt", "C:\Temp\Dump\Processes\Raw\pcasvc.txt" | Where-Object { $_ -match "^[A-Za-z]:\\.+\.exe$" }
-$shimPaths = $ShimcacheImp | Where-Object { $_.Path -match '^[A-Za-z]:\\.*\.exe$' } | Select-Object Path
+$shimPaths = $ShimcacheImp | Where-Object { $_.Path -match '^[A-Za-z]:\\.*\.exe$' -and $_.FileSize -ge $FileSizeL -and $_.FileSize -le $FileSizeH } | Select-Object Path
 $amcachePaths = $AmCacheImp | Where-Object { $_.FullPath -like '*:\*' } | Select-Object -ExpandProperty FullPath
-$srumPaths = $SRUMImp | Where-Object { $_.ExeInfo -like '*:\*' } | Select-Object -ExpandProperty ExeInfo
-$mftPaths = $MFTImp | Where-Object { $_.FilePath -like '*:\*' } | Select-Object -ExpandProperty FilePath
+$srumPaths = $SRUMImp | Where-Object { $_.ExeInfo -like '*:\*' } | Select-Object -ExpandProperty ExeInfo 
+$mftPaths = $MFTImp | Where-Object { $_.FileSize -ge $FileSizeL -and $_.FileSize -le $FileSizeH -and $_.FilePath -like '*:\*' } | Select-Object -ExpandProperty FilePath | Sort-Object -Unique 
 $journalPaths = $JournalImp | Where-Object { $_.FilePath -like '*:\*' } | Select-Object -ExpandProperty FilePath
 $bamPaths = $BamImp | Where-Object { $_.Program -like '*:\*' } | Select-Object -ExpandProperty Program
 $pcaPaths = Get-Content -Path "C:\Temp\Dump\Processes\Filtered\Pca_AppLauncher.txt", `
