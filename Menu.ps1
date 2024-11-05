@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 01 - November - 2024
+# 05 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 function Show-MainMenu {
@@ -33,12 +33,13 @@ function Show-ChecksMenu {
 
 function Show-ProgramsMenu {
     return Read-Host "`n`n`nPrograms Menu:`n
-    (1)`tDownload Timeline Explorer (by Eric Zimmerman)`n
-    (2)`tDownload Registry Explorer (by Eric Zimmerman)`n
-    (3)`tDownload Journal Tool (by Echo)`n
-    (4)`tDownload WinprefetchView (by NirSoft)`n
-    (5)`tDownload System Informer (by Winsider S&S Inc.)`n
-    (6)`tDownload Everything (by voidtools)`n
+    (1)`tDownload CSV File View (by NirSoft)`n
+    (2)`tDownload Timeline Explorer (by Eric Zimmerman)`n
+    (3)`tDownload Registry Explorer (by Eric Zimmerman)`n
+    (4)`tDownload Journal Tool (by Echo)`n
+    (5)`tDownload WinprefetchView (by NirSoft)`n
+    (6)`tDownload System Informer (by Winsider S&S Inc.)`n
+    (7)`tDownload Everything (by voidtools)`n
     (0)`tBack to Main Menu`n`nChoose"
 }
 
