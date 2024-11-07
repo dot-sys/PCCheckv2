@@ -102,6 +102,7 @@ foreach ($entry in $SrumImp) {
 }
 
 $SrumImp | Export-Csv -Path "$SRUMPath\SRUM.csv" -NoTypeInformation -Encoding utf8
+Add-Content -Path "C:\Windows\System32\info.txt" -Value (Get-Date).ToString("dd MMMM yyyy")
 
 $SrumImp | 
 Where-Object { $_.ExeInfo -match "Zip\$|ziptemp|Rar\$|rartemp" } | 
