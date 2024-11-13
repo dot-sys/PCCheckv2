@@ -10,8 +10,8 @@
 # Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
 # It is advised not to use this on your own.
 #
-# Version 2.0
-# 30 - October - 2024
+# Version 2.1
+# 13 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $dmppath = "C:\Temp\Dump"
@@ -40,6 +40,7 @@ $processList2 = @{
     "sysmain"  = Get-ProcessID -ServiceName "Sysmain"
     "dnscache" = Get-ProcessID -ServiceName "Dnscache"
     "lsass"    = (Get-Process lsass).Id
+    "AggregatorHost"    = (Get-Process AggregatorHost).Id
 }
 $processList = $processList1 + $processList2
 
