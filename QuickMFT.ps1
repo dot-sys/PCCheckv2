@@ -194,7 +194,7 @@ Get-ChildItem -Path "C:\temp\dump\MFT\Filtered" -Filter "*Filelisting_Filtered.c
 Write-Host "   Merge Journal"
 Get-ChildItem -Path "C:\temp\dump\MFT\Filtered" -Filter "*J_Output_filtered.csv" | 
     Get-Content | 
-    Set-Content -Path "C:\temp\dump\journal\Journal.csv"
+    Set-Content -Path "C:\temp\dump\journal\Raw\Journal.csv"
 
 Write-Host "   Filtering Journal"
 Set-Location "C:\temp\dump\Journal"
