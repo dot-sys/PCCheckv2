@@ -199,22 +199,19 @@ Get-ChildItem -Path "C:\temp\dump\MFT\Filtered" -Filter "*J_Output_filtered.csv"
 Write-Host "   Filtering Journal"
 Set-Location "C:\temp\dump\Journal"
 $usnDump = Import-Csv "C:\temp\dump\Journal\Raw\Journal.csv"
-$usnReasons = New-Object System.Collections.Generic.HashSet[string] (
-    "FileDelete|Close",
-    "FileCreate",
-    "DataTruncation",
-    "DataOverwrite",
-    "RenameNewName",
-    "RenameOldName",
-    "Close",
-    "HardLinkChange",
-    "SecurityChange",
-    "DataExtend|DataTruncation"
-)
-
 $usnDump = $usnDump |
-    Where-Object { $usnReasons.Contains($_.updatereasons) } |
-    Sort-Object -Property updatereasons -Unique
+    Where-Object { $_.updatereasons -in @(
+        "FileDelete|Close",
+        "FileCreate",
+        "DataTruncation",
+        "DataOverwrite",
+        "RenameNewName",
+        "RenameOldName",
+        "Close",
+        "HardLinkChange",
+        "SecurityChange",
+        "DataExtend|DataTruncation"
+    )} | Sort-Object -Property * -Unique
 $usnDump | Where-Object { $_.Extension -in @('.exe', '.dll', '.zip', '.rar') } | Sort-Object -Property UpdateTimestamp -Descending | Export-Csv -Path "C:\temp\dump\Journal\Raw\Journal_Overview.csv" -NoTypeInformation
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileCreate' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Format-Table -HideTableHeaders | Out-File CreatedFiles.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileDelete' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Out-File DeletedFiles.txt -Append -Width 4096
