@@ -10,176 +10,211 @@
 # Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
 # It is advised not to use this on your own.
 #
-# Version 2.0
-# 01 - November - 2024
+# Version 2.1
+# 16 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue"
 $MFTPath = "C:\temp\dump\MFT"
 Set-Location "$MFTPath"
-& "C:\temp\dump\mftecmd.exe" -f "C:\`$Extend\`$UsnJrnl:`$J" -m "C:\`$MFT" --fl --csv "C:\Temp\Dump\MFT"
 
-$mftFiles = Get-ChildItem "$MFTPath\*.csv"
-foreach ($mftFile in $mftFiles) {
-    $mftNewName = "C_$($mftFile.Name)"
-    $mftNewPath = "$MFTPath\$mftNewName"
-    Rename-Item -Path $mftFile.FullName -NewName $mftNewName
-    Move-Item -Path $mftNewPath -Destination "$MFTPath\Raw"
+Write-Host "   Dumping"
+$mftDrives = Get-WmiObject Win32_LogicalDisk | Select-Object -ExpandProperty DeviceID | ForEach-Object { $_.Substring(0, 1) }
+foreach ($mftDriveLetter in $mftDrives) {
+    & "C:\temp\dump\mftecmd.exe" -f "${mftDriveLetter}:\`$Extend\`$UsnJrnl:`$J" -m "${mftDriveLetter}:\`$MFT" --fl --csv "C:\Temp\Dump\MFT"
+    
+    $mftFiles = Get-ChildItem "$MFTPath\*.csv" | Select-Object -Unique
+    foreach ($mftFile in $mftFiles) {
+        $mftNewName = "${mftDriveLetter}_$($mftFile.Name)"
+        $mftNewPath = "$MFTPath\$mftNewName"
+        Rename-Item -Path $mftFile.FullName -NewName $mftNewName
+        Move-Item -Path $mftNewPath -Destination "$MFTPath\Raw"
+    }
 }
+
 
 $mftFolderPath = "$MFTPath\Raw"
-$mftCsvFiles = Get-ChildItem -Path $mftFolderPath -Filter *.csv
+$mftCsvFiles = Get-ChildItem -Path $mftFolderPath -Filter *.csv | Where-Object { $_.Name -notlike "*MFT_Output.csv" }
+
+Write-Host "   Prefilter (split, then pick extensions)"
+$mftFilteredData = [System.Collections.Generic.List[string]]::new()
+$extensionPattern = [regex]::new('\.(exe|rar|zip|identifier|rpf|dll)$', [System.Text.RegularExpressions.RegexOptions]::Compiled)
+$cutoffDate = (Get-Date).AddMonths(-6).ToString("yyyy-MM-dd HH:mm:ss") + ".0000000"
 
 foreach ($mftFile in $mftCsvFiles) {
-    $mftCsvPath = $mftFile.FullName
-    $mftTempPath = [System.IO.Path]::GetTempFileName()
-    
-    try {
-        $mftReader = [System.IO.StreamReader]::new($mftCsvPath)
-        $mftWriter = [System.IO.StreamWriter]::new($mftTempPath, $false)
+    $lines = Get-Content -Path $mftFile.FullName -ReadCount 0
+    $header = $lines[0] -split ','
+    $extensionIndex = [Array]::IndexOf($header, 'Extension')
+    $createdDateIndex = [Array]::IndexOf($header, 'Created0x10')
 
-        $mftHeader = $mftReader.ReadLine()
-        if ($mftHeader) {
-            if ($mftHeader -match 'Drive') {
-                $mftWriter.WriteLine($mftHeader)
-            }
-            else {
-                $mftWriter.WriteLine("Drive,$mftHeader")
-            }
-            
-            while ($mftLine = $mftReader.ReadLine()) {
-                if ($mftHeader -match 'Drive') {
-                    $mftWriter.WriteLine($mftLine)
-                }
-                else {
-                    $mftWriter.WriteLine("C,$mftLine")
-                }
-            }
+    for ($i = 1; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i] -split ','
+
+        $createdDate = $line[$createdDateIndex]
+        if ($createdDate -lt $cutoffDate) {
+            continue
         }
 
-        $mftReader.Close()
-        $mftWriter.Close()
+        if ($extensionPattern.IsMatch($line[$extensionIndex])) {
+            $mftFilteredData.Add($line -join ',')
+        }
+    }
 
-        Remove-Item -Path $mftCsvPath -Force
-        Move-Item -Path $mftTempPath -Destination $mftCsvPath
-    }
-    catch {
-        Write-Error "Failed to process file ${mftCsvPath}: $_"
-        if (Test-Path $mftTempPath) { Remove-Item -Path $mftTempPath -Force }
+    if ($mftFilteredData.Count -gt 0) {
+        $mftOutputFile = Join-Path -Path $mftFolderPath -ChildPath "$($mftFile.BaseName)_filtered.csv"
+        $header -join ',' | Out-File -FilePath $mftOutputFile -Encoding UTF8
+        $mftFilteredData | Out-File -FilePath $mftOutputFile -Append -Encoding UTF8
+        $mftFilteredData.Clear()
     }
 }
 
-$mftSourcePath = "$MFTPath\Raw"
-    
-Get-ChildItem -Path $mftSourcePath -File | Where-Object {
-    $_.Name -like '*$J_output.csv' -or $_.Name -like '*Filelisting.csv'
-} | ForEach-Object {
-    $mftInputFile = $_.FullName
-    $mftOutputFile = Join-Path -Path $mftSourcePath -ChildPath "$($_.BaseName)_filtered.csv"
-    
-    Import-Csv -Path $mftInputFile | Where-Object { $_.Extension -match '\.(exe|rar|zip|identifier|rpf|dll)$' } | Export-Csv -Path $mftOutputFile -NoTypeInformation
-}
-    
-$mftSourcePath = "$MFTPath\Raw"
-$mftDestinationPath = "$MFTPath\Filtered"
-    
-Get-ChildItem -Path $mftSourcePath -Filter '*_filtered.csv' | ForEach-Object {
-    Move-Item -Path $_.FullName -Destination $mftDestinationPath -Force
-}
-    
-$mftSourceDir = "$MFTPath\Filtered"
-$mftFileListingFiles = Get-ChildItem -Path $mftSourceDir -Filter '*FileListing_filtered.csv' | Select-Object -ExpandProperty FullName
-$mftOutputFiles = Get-ChildItem -Path $mftSourceDir -Filter '*Output_filtered.csv' | Select-Object -ExpandProperty FullName
-    
-function mftJoinSortAndSelectCsv {
-    param (
-        [string[]]$mftFiles,
-        [string]$mftSortColumn,
-        [string[]]$mftSelectColumns
-    )
-    
-    if ($mftFiles.Length -eq 0) {
-        return
-    }
-    
-    $mftAllData = Import-Csv -Path $mftFiles[0]
-    foreach ($mftFile in $mftFiles[1..($mftFiles.Length - 1)]) {
-        $mftAllData += Import-Csv -Path $mftFile
-    }
-    
-    $mftSortedData = $mftAllData | Sort-Object -Property $mftSortColumn -Descending
-    $mftSelectedData = $mftSortedData | Select-Object -Property $mftSelectColumns
-    return $mftSelectedData
-}
-    
-$mftFileListingColumns = 'Drive', 'FullPath', 'Extension', 'FileSize', 'Created0x10', 'LastModified0x10'
-$mftFileListingData = mftJoinSortAndSelectCsv -mftFiles $mftFileListingFiles -mftSortColumn 'Created0x10' -mftSelectColumns $mftFileListingColumns
-$mftFileListingData | Where-Object { $_.FileSize -ne 0 } | Export-Csv -Path "$MFTPath\MFT.csv" -NoTypeInformation
-    
-$mftOutputColumns = 'Drive', 'ParentPath', 'Name', 'Extension', 'UpdateTimestamp', 'UpdateReasons'
-$mftOutputData = mftJoinSortAndSelectCsv -mftFiles $mftOutputFiles -mftSortColumn 'UpdateTimestamp' -mftSelectColumns $mftOutputColumns
-$mftOutputData | Export-Csv -Path "$MFTPath\Journal.csv" -NoTypeInformation
-    
-Write-Host "   Sorting USN Journal"-ForegroundColor yellow
-Set-Location "$MFTPath"
+Write-Host "   Sizefilter"
 
-Import-Csv "Journal.csv" | ForEach-Object {
-    $FilePath = if ($_.ParentPath) {
-        "$($_.Drive):$($_.ParentPath.TrimStart('.'))\$($_.Name)"
+$FilesizeL = 2000000
+Get-ChildItem "C:\Temp\Dump\MFT\Raw" -Filter "*FileListing_filtered.csv" |
+ForEach-Object {
+    $csvData = Import-Csv $_.FullName
+    Write-Host "Processing file: $($_.FullName)"
+    $filteredData = $csvData |
+        Where-Object { 
+            [int]$_.FileSize -ge $FilesizeL -and $_.IsDirectory -ne "TRUE"
+        }
+
+    Write-Host "Filtered records count: $($filteredData.Count)"
+    
+    $filteredData |
+    ForEach-Object {
+        $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("yyyy-MM-dd HH:mm:ss")
+        $FormattedLastModified = [datetime]::Parse($_.LastModified0x10).ToString("yyyy-MM-dd HH:mm:ss")
+
+        [PSCustomObject]@{
+            CreatedTimestamp = $FormattedTimestamp
+            FilePath         = $_.FullPath
+            FileSize         = $_.FileSize
+            Extension        = $_.Extension
+            LastModified     = $FormattedLastModified
+        }
+    } |
+    Sort-Object CreatedTimestamp -Descending |
+    Export-Csv $_.FullName -NoTypeInformation
+}
+
+Write-Host "   Move Items"
+Get-ChildItem -Path "C:\temp\dump\mft\raw" -Recurse -Filter "*_Filtered.csv" | 
+    Move-Item -Destination "C:\temp\dump\mft\Filtered"
+
+Write-Host "   Drive Column"
+$folderPath = "C:\Temp\Dump\MFT\Filtered"
+
+function Get-DriveLetter {
+    param ($fileBaseName)
+    return "$($fileBaseName[0]):"
+}
+
+function ProcessJOutput {
+    param ($reader, $writer, $driveLetter)
+
+    $header = $reader.ReadLine()
+    $headerColumns = $header -split ','
+
+    $updateTimestampIndex = $headerColumns.IndexOf("UpdateTimestamp")
+    $parentPathIndex = $headerColumns.IndexOf("ParentPath")
+    $updateReasonsIndex = $headerColumns.IndexOf("UpdateReasons")
+    $extensionIndex = $headerColumns.IndexOf("Extension")
+    $nameIndex = $headerColumns.IndexOf("Name")
+
+    $newHeader = "UpdateTimestamp,FullPath,UpdateReasons,Extension"
+    $writer.WriteLine($newHeader)
+
+    while ($line = $reader.ReadLine()) {
+        $columns = $line -split ','
+
+        if ($parentPathIndex -ge 0 -and $nameIndex -ge 0) {
+            $fullPath = $driveLetter + ($columns[$parentPathIndex] -replace '^\.', '') + "\" + $columns[$nameIndex]
+            $filteredColumns = @(
+                $columns[$updateTimestampIndex],
+                $fullPath,
+                $columns[$updateReasonsIndex],
+                $columns[$extensionIndex]
+            )
+            $writer.WriteLine(($filteredColumns -join ','))
+        }
     }
-    else {
-        "$($_.Drive):\UNKNOWNPATH\$($_.Name)"
+}
+
+$csvFiles = Get-ChildItem -Path $folderPath -Filter *csv
+
+    foreach ($csvFile in $csvFiles) {
+        $csvFilePath = $csvFile.FullName
+        $tempFilePath = [System.IO.Path]::GetTempFileName()
+        $driveLetter = Get-DriveLetter -fileBaseName $csvFile.BaseName
+
+        try {
+            $reader = [System.IO.StreamReader]::new($csvFilePath)
+            $writer = [System.IO.StreamWriter]::new($tempFilePath, $false)
+
+            if ($csvFile.BaseName -match "FileListing_filtered") {
+                ProcessFileListing -reader $reader -writer $writer -driveLetter $driveLetter
+            }
+            elseif ($csvFile.BaseName -match "J_Output_filtered") {
+                ProcessJOutput -reader $reader -writer $writer -driveLetter $driveLetter
+            }
+
+            $reader.Dispose()
+            $writer.Dispose()
+
+            Remove-Item -Path $csvFilePath -Force
+            Move-Item -Path $tempFilePath -Destination $csvFilePath
+
+        } catch {
+            Write-Error "Failed to process file ${csvFilePath}: $_"
+            if (Test-Path $tempFilePath) { Remove-Item -Path $tempFilePath -Force }
+        }
     }
-    
-    $FormattedTimestamp = [datetime]::Parse($_.UpdateTimestamp).ToString("yyyy-MM-dd HH:mm:ss")
-    
-    [PSCustomObject]@{
-        UpdateTimestamp = $FormattedTimestamp
-        FilePath        = $FilePath
-        UpdateReasons   = $_.UpdateReasons
-        Extension       = $_.Extension
+
+Get-ChildItem -Path "C:\temp\dump\MFT\Filtered" -Filter "*Filelisting_Filtered.csv" | ForEach-Object {
+    $DriveLetter = ($_.Name.Substring(0, 1)) + ":"
+    Import-Csv $_.FullName | ForEach-Object {
+        $FilePath = if ($_.FilePath) {
+            "$DriveLetter\$($_.FilePath.TrimStart('.\'))"
+        }
+        else {
+            "$DriveLetter\UNKNOWNPATH"
+        }
+        
+        [PSCustomObject]@{
+            CreatedTimestamp = $_.CreatedTimestamp
+            FilePath         = $FilePath
+            FileSize         = $_.FileSize
+            Extension        = $_.Extension
+            LastModified     = $_.LastModified
+        }
     }
-} | Export-Csv "C:\temp\dump\Journal\Raw\Journal.csv" -NoTypeInformation
-    
-Import-Csv "MFT.csv" | ForEach-Object {
-    $FilePath = if ($_.FullPath) {
-        "$($_.Drive):$($_.FullPath.TrimStart('.'))"
-    }
-    else {
-        "$($_.Drive):\UNKNOWNPATH"
-    }
-    
-    $FormattedTimestamp = [datetime]::Parse($_.Created0x10).ToString("yyyy-MM-dd HH:mm:ss")
-    
-    [PSCustomObject]@{
-        CreatedTimestamp = $FormattedTimestamp
-        FilePath         = $FilePath
-        FileSize         = $_.FileSize
-        Extension        = $_.Extension
-        LastModified     = $_.LastModified0x10
-    }
-    
-} | Export-Csv "C:\temp\dump\MFT\MFT2.csv" -NoTypeInformation
-    
-Remove-Item "C:\temp\dump\MFT\Journal.csv"
-Remove-Item "C:\temp\dump\MFT\MFT.csv"
-Rename-Item -Path "C:\temp\dump\MFT\MFT2.csv" -NewName "C:\temp\dump\MFT\MFT.csv"
-    
+} | Sort-Object CreatedTimestamp -Descending | Export-Csv "C:\temp\dump\MFT\MFT.csv" -NoTypeInformation -Append
+
+Write-Host "   Merge Journal"
+Get-ChildItem -Path "C:\temp\dump\MFT\Filtered" -Filter "*J_Output_filtered.csv" | 
+    Get-Content | 
+    Set-Content -Path "C:\temp\dump\journal\Journal.csv"
+
 Write-Host "   Filtering Journal"
 Set-Location "C:\temp\dump\Journal"
 $usnDump = Import-Csv "C:\temp\dump\Journal\Raw\Journal.csv"
+$usnReasons = New-Object System.Collections.Generic.HashSet[string] (
+    "FileDelete|Close",
+    "FileCreate",
+    "DataTruncation",
+    "DataOverwrite",
+    "RenameNewName",
+    "RenameOldName",
+    "Close",
+    "HardLinkChange",
+    "SecurityChange",
+    "DataExtend|DataTruncation"
+)
+
 $usnDump = $usnDump |
-    Where-Object { $_.updatereasons -in @(
-        "FileDelete|Close",
-        "FileCreate",
-        "DataTruncation",
-        "DataOverwrite",
-        "RenameNewName",
-        "RenameOldName",
-        "Close",
-        "HardLinkChange",
-        "SecurityChange",
-        "DataExtend|DataTruncation"
-    )} | Sort-Object -Property * -Unique
+    Where-Object { $usnReasons.Contains($_.updatereasons) } |
+    Sort-Object -Property updatereasons -Unique
 $usnDump | Where-Object { $_.Extension -in @('.exe', '.dll', '.zip', '.rar') } | Sort-Object -Property UpdateTimestamp -Descending | Export-Csv -Path "C:\temp\dump\Journal\Raw\Journal_Overview.csv" -NoTypeInformation
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileCreate' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Format-Table -HideTableHeaders | Out-File CreatedFiles.txt -Append -Width 4096
 $usnDump | Where-Object { $_.'Extension' -eq ".exe" -and $_.'UpdateReasons' -match 'FileDelete' } | Select-Object 'FilePath', 'UpdateTimestamp' | Sort-Object 'UpdateTimestamp' -Descending -Unique | Out-String -Width 4096 | Out-File DeletedFiles.txt -Append -Width 4096
