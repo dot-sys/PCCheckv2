@@ -446,7 +446,7 @@ foreach ($file in $allFiles) {
 }
 
 $browsingPath = "C:\temp\dump\SQLECMD"
-$browserKeywords = "Astra", "Hydrogen", "Leet-Cheat", "Cheat", "ro9an", "Skript", "0xCheat", "reselling", "UsbDeview", "para.ac", "vanish-cheat", "Para Selling", "0xCheats"
+$browserKeywords = "Astra", "Hydrogen", "Leet-Cheat", "Cheat", "ro9an", "Skript", "0xCheat", "reselling", "UsbDeview", "para.ac", "vanish-cheat", "Para Selling", "0xCheats", "rose-shop"
 $outputCsvFilePath = "$browsingPath\Browserhistory.csv"
 $browserHistoryResults = @()
 
