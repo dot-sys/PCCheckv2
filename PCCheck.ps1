@@ -660,12 +660,12 @@ if ($CheatThreats) {
 }
 
 $Cheats3 = $mftImp | Where-Object { 
-    $_.Filepath -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox" -or 
+    $_.Filepath -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy" -or 
     $_.Filesize -in $fsSkript, $fsLeet, $fsAstra, $fsHydro, $fsAbby, $fsHitbox, $fsRo9an 
 } | Select-Object -ExpandProperty Filepath -Unique
 
 $Cheats3 += $paths | Where-Object { 
-    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox" 
+    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy" 
 }
 
 $Cheats3 = $Cheats3 | Sort-Object -Unique
@@ -677,7 +677,7 @@ if ($Cheats3.Count -gt 0) {
 }
 
 $Cheats4 = $journalPaths | Where-Object { 
-    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox"
+    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy"
 }
 
 if ($Cheats4.Count -gt 0) {
@@ -687,7 +687,7 @@ if ($Cheats4.Count -gt 0) {
 }
 
 $Cheats5 = $usbFileList | Where-Object { 
-    $_.FullName -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox" -or 
+    $_.FullName -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy" -or 
     $_.Length -in @($fsSkript, $fsLeet, $fsAstra, $fsHydro, $fsAbby, $fsHitbox, $fsRo9an)
 }
 
