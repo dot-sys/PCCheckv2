@@ -486,7 +486,7 @@ $bamPaths = $BamImp | Where-Object { $_.Program -like '*:\*' } | Select-Object -
 $pcaPaths = Get-Content -Path "C:\Temp\Dump\Processes\Filtered\Pca_AppLauncher.txt", `
     "C:\Temp\Dump\Processes\Filtered\Pca_Extended.txt", `
     "C:\Temp\Dump\Processes\Filtered\PcaClient.txt"
-$o2 = $journalPaths | Where-Object { $_ -match "1337|skript|usbdeview|loader_64|abby|ro9an|hitbox|w32|vds|systeminformer|hacker|aimbot|triggerbot" } | Sort-Object -Unique
+$o2 = $journalPaths | Where-Object { $_ -match "1337|skript|usbdeview|loader_64|abby|ro9an|hitbox|w32|vds|systeminformer|hacker|aimbot|triggerbot|clumsy" } | Sort-Object -Unique
 $o2 | Set-Content "C:\temp\dump\journal\Keywordsearch.txt"
 $susJournal = if ($o2) { "Suspicious Files found in Journal" }
 
