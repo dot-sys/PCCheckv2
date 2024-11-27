@@ -10,8 +10,8 @@
 # Running PC Checking Programs, including this script, outside of PC Checks may have impact on the outcome.
 # It is advised not to use this on your own.
 #
-# Version 2.0
-# 03 - November - 2024
+# Version 2.1
+# 27 - November - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $configJson = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dot-sys/cfg/master/cfg.json" 
