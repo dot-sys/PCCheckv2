@@ -223,6 +223,7 @@ $JournalImp = Import-Csv C:\Temp\Dump\Journal\Raw\Journal.csv
 $MFTImp = Import-Csv C:\Temp\Dump\MFT\MFT.csv
 $BamImp = Import-Csv C:\Temp\Dump\Registry\Bam.csv
 $PrefetchImp = Import-Csv C:\Temp\Dump\Prefetch\Prefetch.csv
+$ShellbagsImp = Import-Csv C:\Temp\Dump\Shellbags\Shellbags.csv
 $ShimcacheImp = Import-Csv C:\Temp\Dump\Shimcache\Shimcache.csv
 $SRUMImp = Import-Csv C:\Temp\Dump\SRUM\SRUM.csv
 $Threats = Get-Content C:\Temp\Dump\Detections.txt
@@ -663,6 +664,10 @@ $Cheats3 = $mftImp | Where-Object {
     $_.Filepath -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy" -or 
     $_.Filesize -in $fsSkript, $fsLeet, $fsAstra, $fsHydro, $fsAbby, $fsHitbox, $fsRo9an 
 } | Select-Object -ExpandProperty Filepath -Unique
+
+$Cheats3 += $ShellbagsImp | Where-Object { 
+    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy|cheat|trigger|abbyace|1337-Scripts|1337" 
+}
 
 $Cheats3 += $paths | Where-Object { 
     $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy" 
