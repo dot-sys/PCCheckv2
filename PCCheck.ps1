@@ -666,7 +666,7 @@ $Cheats3 = $mftImp | Where-Object {
 } | Select-Object -ExpandProperty Filepath -Unique
 
 $Cheats3 += $ShellbagsImp | Where-Object { 
-    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy|cheat|trigger|abbyace|1337-Scripts|1337" 
+    $_ -match "usbdeview|ro9an|aimbot|triggerbot|gambohub|abbyace|hitbox|clumsy|trigger|abbyace|1337-Scripts|1337" 
 }
 
 $Cheats3 += $paths | Where-Object { 
