@@ -145,6 +145,8 @@ if ($foundFiles.Count -gt 0) {
     if ($inputs -eq "Y") {
         Start-Process notepad.exe $resultsFile
     } else {
-        & C:\temp\scripts\Menu.ps1
+        Write-Host "No action taken. Returning to menu."
     }
 }
+
+& "C:\Temp\Scripts\Menu.ps1"
