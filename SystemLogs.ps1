@@ -11,7 +11,7 @@
 # It is advised not to use this on your own.
 #
 # Version 2.0
-# 01 - December - 2024
+# 06 - December - 2024
 
 $ErrorActionPreference = "SilentlyContinue" 
 $SRUMPath = "C:\temp\dump\SRUM"
@@ -446,7 +446,7 @@ foreach ($file in $allFiles) {
 }
 
 $browsingPath = "C:\temp\dump\SQLECMD"
-$browserKeywords = "Astra", "Hydrogen", "Leet-Cheat", "Cheat", "ro9an", "Skript", "0xCheat", "reselling", "UsbDeview", "para-store", "para.ac", "vanish*cheat", "vanish*cleaner", "vanish-cheat", "Para Selling", "rose-shop", "leet.su", "aimbot", "wallhack", "triggerbot", "Healkey", "cdn.discord*.exe", "HWID", "Spoofer"
+$browserKeywords = "Astra", "Hydrogen", "Leet-Cheat", "Cheat", "ro9an", "Skript", "0xCheat", "reselling", "UsbDeview", "para-store", "para.ac", "mysellauth", "vanish*cheat", "vanish*cleaner", "vanish-cheat", "Para Selling", "rose-shop", "leet.su", "aimbot", "wallhack", "triggerbot", "Healkey", "cdn.discord*.exe", "HWID", "Spoofer"
 $outputCsvFilePath = "$browsingPath\Browserhistory.csv"
 $browserHistoryResults = @()
 
